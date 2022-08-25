@@ -2,7 +2,7 @@
 
 A very simple example [Ema](https://ema.srid.ca/) site that is based on Blaze HTML & TailwindCSS 3. Use it to bootstrap your next static site using Ema.
 
-The generated HTML site can be previewed here: https://emaapps.github.io/ema-template/
+The generated HTML site can be previewed here: https://emaapps.github.io/astaghfirullah/
 
 ## Getting Started
 
@@ -25,7 +25,7 @@ All but the final step need to be done only once. Check [the Ema tutorial](https
   - Tailwind CSS is compiled, alongside Ghcid, via foreman (see `./Procfile`)
 - As a first step to using this template, 
   - change the project name in .cabal, flake.nix and hie.yaml files; then commit changes to Git.
-      - To automate this, `mv ema-template.cabal myproject.cabal; nix run nixpkgs#sd -- ema-template myproject * */* .github/*/*`
+      - To automate this, `mv astaghfirullah.cabal myproject.cabal; nix run nixpkgs#sd -- astaghfirullah myproject * */* .github/*/*`
 - Configuration:
   - To change the port (or the Ema CLI arguments, used by `bin/run`), see `./.ghcid` (if you leave out `--port` a random port will be used)
   - To update Ema to the latest Git revision, run `nix flake lock --update-input ema` or just `nix flake update` (the latter updates all Nix inputs)
