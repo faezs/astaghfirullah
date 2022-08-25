@@ -34,6 +34,7 @@ executable astaghfirullah
     , filepath
     , generic-optics
     , monad-logger
+    , newtype-generics
     , optics-core
     , optparse-applicative
     , relude                >=1.0
