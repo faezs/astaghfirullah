@@ -41,7 +41,7 @@ executable astaghfirullah
     , time
     , unionmount            >=0.2
     , unliftio
-
+    , newtype-generics
   mixins:
     base hiding (Prelude),
     relude (Relude as Prelude, Relude.Container.One),
