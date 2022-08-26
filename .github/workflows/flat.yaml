@@ -23,5 +23,7 @@ jobs:
       with:
         http_url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS7CgV6dlXXi7re9fkLg0ZOm5vs3OqFmVNk0irPx5xXz-tIrqSl6WFCxsbdRmeFD5ZhGCO0GDl7x3og/pub?gid=0&single=true&output=csv'
         downloaded_filename: data/impact-assesment.csv
-        # http_url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS7CgV6dlXXi7re9fkLg0ZOm5vs3OqFmVNk0irPx5xXz-tIrqSl6WFCxsbdRmeFD5ZhGCO0GDl7x3og/pub?gid=0&single=true&output=csv'
-        # downloaded_filename: data/impact-assesment.csv
+        http_url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMGdVltk1u6mfSPIxgkZHCNKK3uUZTWBqY6gIVQZ0Y1sjYK_--9-EZUj-cdjGoJXvzazd_OxHtTJo0/pub?output=csv'
+        download_filename: data/on-ground-contacts.csv
+        http_url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRgeZpPDTIYSe4zlk4CppIc4UzXZCx-rvK-j3smOxW_GjZXhVPabNH8JeHEePZ-QjhqXJQdiQjBK8KB/pub?gid=0&single=true&output=csv'
+        download_filename: data/vendor-list.csv
