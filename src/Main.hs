@@ -3,23 +3,75 @@
 
 module Main where
 
+import Control.Exception (throw)
+import Control.Monad.Logger
+import Data.Csv (FromNamedRecord (..), (.:))
+import Data.Csv qualified as Csv
 import Data.Generics.Sum.Any (AsAny (_As))
 import Ema
 import Ema.CLI qualified
 import Ema.Route.Generic.TH
 import Ema.Route.Lib.Extra.StaticRoute qualified as SR
+import GHC.IO.Exception (userError)
+import Match qualified
 import Optics.Core (Prism', (%))
 import Options.Applicative
+import Shower qualified
+import System.FilePath ((</>))
+import System.UnionMount qualified as UM
 import Text.Blaze.Html.Renderer.Utf8 qualified as RU
 import Text.Blaze.Html5 ((!))
 import Text.Blaze.Html5 qualified as H
 import Text.Blaze.Html5.Attributes qualified as A
-import qualified Match
+import UnliftIO
 
+data ImpactAssessment = ImpactAssessment
+  { iaDistrict :: Text
+  , iaTehsil :: Text
+  , iaPopulation :: Text
+  }
+  deriving stock (Eq, Show)
+
+instance FromNamedRecord ImpactAssessment where
+  parseNamedRecord r =
+    ImpactAssessment
+      <$> r .: "District"
+      <*> r .: "Tehsil"
+      <*> r .: "Total Population"
+
+impactAssessmentDynamic ::
+  forall m.
+  (MonadIO m, MonadUnliftIO m, MonadLogger m, MonadLoggerIO m) =>
+  -- | Path to `./data` directory
+  FilePath ->
+  m (Dynamic m [ImpactAssessment])
+impactAssessmentDynamic dataDir = do
+  let pats = [((), "*.csv")]
+  Dynamic <$> UM.mount dataDir pats mempty mempty handleAction
+  where
+    handleAction ::
+      () ->
+      FilePath ->
+      UM.FileAction () ->
+      m ([ImpactAssessment] -> [ImpactAssessment])
+    handleAction () fp fpAct = do
+      if fp == "impact-assesment.csv"
+        then case fpAct of
+          UM.Refresh _ () -> do
+            logInfoNS "csv" $ "Reading " <> toText fp
+            s <- readFileLBS $ dataDir </> fp
+            case Csv.decodeByName @ImpactAssessment s of
+              Left err -> throw $ userError $ "Failed to decode CSV: " <> fp <> ": " <> err
+              Right (_, toList -> rows) ->
+                pure $ \_ -> rows
+          UM.Delete -> do
+            pure $ \_ -> []
+        else pure id
 
 data Model = Model
   { modelBaseUrl :: Text
   , modelStatic :: SR.Model
+  , modelImpactAssessment :: [ImpactAssessment]
   }
   deriving stock (Eq, Show, Generic)
 
@@ -53,7 +105,8 @@ instance EmaSite Route where
   type SiteArg Route = CliArgs
   siteInput cliAct args = do
     staticRouteDyn <- siteInput @StaticRoute cliAct ()
-    pure $ Model (cliArgsBaseUrl args) <$> staticRouteDyn
+    impactAssessment <- impactAssessmentDynamic "data"
+    pure $ Model (cliArgsBaseUrl args) <$> staticRouteDyn <*> impactAssessment
   siteOutput rp m = \case
     Route_Html r ->
       pure $ Ema.AssetGenerated Ema.Html $ renderHtmlRoute rp m r
@@ -85,11 +138,11 @@ renderBody rp model r = do
     H.h1 ! A.class_ "text-3xl font-bold" $ H.toHtml $ routeTitle r
     case r of
       HtmlRoute_Index -> do
-        "You are on the index page. Want to see "
-        routeLink rp HtmlRoute_About "About"
-        "?"
+        H.pre $ H.toHtml $ Shower.shower $ modelImpactAssessment model
       HtmlRoute_About -> do
         "You are on the about page."
+        "Go to "
+        routeLink rp HtmlRoute_About "Index"
     H.img ! A.src (staticRouteUrl rp model "logo.svg") ! A.class_ "py-4 w-32" ! A.alt "Ema Logo"
 
 renderNavbar :: Prism' FilePath Route -> HtmlRoute -> H.Html

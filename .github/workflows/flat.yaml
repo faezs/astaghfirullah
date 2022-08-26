@@ -1,0 +1,27 @@
+name: flat
+
+on:
+  push:
+    paths:
+      - .github/workflows/flat.yaml # Only run a new workflow every time this file (flat.yaml) file changes
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 1 * *' # Run once a month
+    
+jobs:
+  scheduled:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup deno
+      uses: denoland/setup-deno@main
+      with:
+        deno-version: v1.x
+    - name: Check out repo
+      uses: actions/checkout@v2
+    - name: Fetch data
+      uses: githubocto/flat@v3
+      with:
+        http_url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS7CgV6dlXXi7re9fkLg0ZOm5vs3OqFmVNk0irPx5xXz-tIrqSl6WFCxsbdRmeFD5ZhGCO0GDl7x3og/pub?gid=0&single=true&output=csv'
+        downloaded_filename: data/impact-assesment.csv
+        # http_url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS7CgV6dlXXi7re9fkLg0ZOm5vs3OqFmVNk0irPx5xXz-tIrqSl6WFCxsbdRmeFD5ZhGCO0GDl7x3og/pub?gid=0&single=true&output=csv'
+        # downloaded_filename: data/impact-assesment.csv
