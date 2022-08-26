@@ -27,6 +27,7 @@ executable astaghfirullah
     , base
     , blaze-html
     , blaze-markup
+    , cassava
     , containers
     , data-default
     , directory
@@ -38,6 +39,7 @@ executable astaghfirullah
     , optics-core
     , optparse-applicative
     , relude                >=1.0
+    , shower
     , text
     , time
     , unionmount            >=0.2
