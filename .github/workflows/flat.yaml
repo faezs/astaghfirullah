@@ -27,9 +27,9 @@ jobs:
       uses: githubocto/flat@v3
       with:
         http_url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMGdVltk1u6mfSPIxgkZHCNKK3uUZTWBqY6gIVQZ0Y1sjYK_--9-EZUj-cdjGoJXvzazd_OxHtTJo0/pub?output=csv'
-        download_filename: data/on-ground-contacts.csv
+        downloaded_filename: data/on-ground-contacts.csv
     - name: Fetch data
       uses: githubocto/flat@v3
       with:
         http_url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRgeZpPDTIYSe4zlk4CppIc4UzXZCx-rvK-j3smOxW_GjZXhVPabNH8JeHEePZ-QjhqXJQdiQjBK8KB/pub?gid=0&single=true&output=csv'
-        download_filename: data/vendor-list.csv
+        downloaded_filename: data/vendor-list.csv
