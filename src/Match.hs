@@ -1,9 +1,10 @@
 {-# LANGUAGE OverloadedLabels #-}
+
 module Match where
 
 import Control.Newtype.Generics
-import GHC.Generics (Generic)
 import Data.Text (Text)
+import GHC.Generics (Generic)
 
 type a :* b = (a, b)
 
@@ -13,13 +14,13 @@ newtype Cost = Cost Int
   deriving anyclass (Newtype)
 
 data TentDimensions = TentDimensions Int Int Int
-    deriving stock (Eq, Ord, Show, Generic)
+  deriving stock (Eq, Ord, Show, Generic)
 
 type R = Double
 
 newtype Kg = Kg Int
   deriving stock (Generic, Show)
-  deriving newtype (Eq, Ord, Num)  
+  deriving newtype (Eq, Ord, Num)
   deriving anyclass (Newtype)
 
 newtype RationItemName = RationItemName Text
@@ -43,7 +44,7 @@ newtype MedicineId = MedicineId Int
   deriving anyclass (Newtype)
 
 data RationItem = RationItem
-  { rationItemId :: RationItemId 
+  { rationItemId :: RationItemId
   , rationItemName :: RationItemName
   , rationItemQuantity :: Kg
   , rationItemCost :: Cost
@@ -91,12 +92,13 @@ data AidItem where
   Medicines :: [Medicine] -> AidItem
   deriving stock (Eq, Show, Generic)
 
-data Province = Balochistan
-              | GilgitBaltistan
-              | Pakhtunkhwa
-              | Punjab
-              | Sindh
-              deriving stock (Eq, Show, Ord, Generic, Bounded, Enum)
+data Province
+  = Balochistan
+  | GilgitBaltistan
+  | Pakhtunkhwa
+  | Punjab
+  | Sindh
+  deriving stock (Eq, Show, Ord, Generic, Bounded, Enum)
 
 newtype District = District Text
   deriving stock (Generic, Show)
@@ -127,7 +129,8 @@ data Location = Location
   , unionCouncil :: UnionCouncil
   , commonName :: CommonName
   , gpsCoordinates :: GPSCoordinates
-  } deriving stock (Eq, Show, Generic)
+  }
+  deriving stock (Eq, Show, Generic)
 
 data Affectees = Affectees
   { affecteesLocation :: Location
@@ -135,7 +138,8 @@ data Affectees = Affectees
   , foodShortage :: NumberOfPeople
   , tentShortage :: NumberOfPeople
   , medicineShortage :: NumberOfPeople
-  } deriving stock (Eq, Show, Generic)
+  }
+  deriving stock (Eq, Show, Generic)
 
 newtype PersonName = PersonName Text
   deriving stock (Generic, Show)
@@ -162,25 +166,27 @@ newtype IBFT = IBFT Text
   deriving newtype (Eq, Ord)
   deriving anyclass (Newtype)
 
-newtype Bank = Bank Text  
+newtype Bank = Bank Text
   deriving stock (Generic, Show)
   deriving newtype (Eq, Ord)
   deriving anyclass (Newtype)
 
-data BankAccountAddress = Raast Phone
-                        | IBFTAddress IBAN
-                        | IBANAddress IBFT
-                        | MobileAccount Phone
-                        deriving stock (Eq, Show, Generic)
+data BankAccountAddress
+  = Raast Phone
+  | IBFTAddress IBAN
+  | IBANAddress IBFT
+  | MobileAccount Phone
+  deriving stock (Eq, Show, Generic)
 
 data ResponsibleParty = ResponsibleParty
   { aapkaNaam :: PersonName
-  , located :: Location 
+  , located :: Location
   , phone :: Phone
   , cnic :: CNIC
   , bank :: Bank
   , bankAccount :: BankAccountAddress
-  } deriving stock (Eq, Show, Generic)
+  }
+  deriving stock (Eq, Show, Generic)
 
 data Atiya = Paisay Cost | Item AidItem
   deriving stock (Eq, Show, Generic)

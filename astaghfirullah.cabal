@@ -34,6 +34,7 @@ executable astaghfirullah
     , filepath
     , generic-optics
     , monad-logger
+    , newtype-generics
     , optics-core
     , optparse-applicative
     , relude                >=1.0
@@ -41,7 +42,7 @@ executable astaghfirullah
     , time
     , unionmount            >=0.2
     , unliftio
-    , newtype-generics
+
   mixins:
     base hiding (Prelude),
     relude (Relude as Prelude, Relude.Container.One),
@@ -96,5 +97,5 @@ executable astaghfirullah
 
   main-is:            Main.hs
   hs-source-dirs:     src
-  other-modules: Match
+  other-modules:      Match
   default-language:   Haskell2010

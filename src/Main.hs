@@ -8,14 +8,13 @@ import Ema
 import Ema.CLI qualified
 import Ema.Route.Generic.TH
 import Ema.Route.Lib.Extra.StaticRoute qualified as SR
+import Match qualified
 import Optics.Core (Prism', (%))
 import Options.Applicative
 import Text.Blaze.Html.Renderer.Utf8 qualified as RU
 import Text.Blaze.Html5 ((!))
 import Text.Blaze.Html5 qualified as H
 import Text.Blaze.Html5.Attributes qualified as A
-import qualified Match
-
 
 data Model = Model
   { modelBaseUrl :: Text
