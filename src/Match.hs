@@ -12,10 +12,8 @@ newtype Cost = Cost Int
   deriving newtype (Eq, Ord, Num)
   deriving anyclass (Newtype)
 
-
 data TentDimensions = TentDimensions Int Int Int
     deriving stock (Eq, Ord, Show, Generic)
-
 
 type R = Double
 
@@ -73,7 +71,6 @@ data Clothes = Clothes
   }
   deriving stock (Eq, Show, Generic, Ord)
 
-
 class HasCost a where
   cost :: a -> Cost
 
@@ -87,8 +84,6 @@ instance HasCost AidItem where
   cost (Tent _ c) = c
   cost (RationPack xs) = sum (cost <$> xs)
   cost (Medicines xs) = sum (cost <$> xs)
-  
-
 
 data AidItem where
   Tent :: TentDimensions -> Cost -> AidItem
@@ -126,7 +121,6 @@ newtype NumberOfPeople = NumberOfPeople Int
   deriving newtype (Eq, Ord, Num)
   deriving anyclass (Newtype)
 
-
 data Location = Location
   { province :: Province
   , district :: District
@@ -134,8 +128,6 @@ data Location = Location
   , commonName :: CommonName
   , gpsCoordinates :: GPSCoordinates
   } deriving stock (Eq, Show, Generic)
-
-
 
 data Affectees = Affectees
   { affecteesLocation :: Location
@@ -183,12 +175,12 @@ data BankAccountAddress = Raast Phone
 
 data ResponsibleParty = ResponsibleParty
   { aapkaNaam :: PersonName
+  , located :: Location 
   , phone :: Phone
   , cnic :: CNIC
   , bank :: Bank
   , bankAccount :: BankAccountAddress
   } deriving stock (Eq, Show, Generic)
-
 
 data Atiya = Paisay Cost | Item AidItem
   deriving stock (Eq, Show, Generic)

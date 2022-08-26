@@ -25,6 +25,8 @@ executable astaghfirullah
     , aeson
     , async
     , base
+    , lucid
+    , lucid-htmx
     , blaze-html
     , blaze-markup
     , containers
@@ -42,7 +44,13 @@ executable astaghfirullah
     , time
     , unionmount            >=0.2
     , unliftio
-
+    , servant               == 0.18.3
+    , servant-htmx
+    , servant-lucid
+    , servant-server        == 0.18.3
+    , wai
+    , warp
+  
   mixins:
     base hiding (Prelude),
     relude (Relude as Prelude, Relude.Container.One),
