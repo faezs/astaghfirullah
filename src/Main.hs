@@ -24,54 +24,133 @@ import Text.Blaze.Html5 ((!))
 import Text.Blaze.Html5 qualified as H
 import Text.Blaze.Html5.Attributes qualified as A
 import UnliftIO
+import Data.Vector (Vector)
+import qualified Data.Vector as V
 
-data ImpactAssessment = ImpactAssessment
-  { iaDistrict :: Text
-  , iaTehsil :: Text
-  , iaPopulation :: Text
-  }
-  deriving stock (Eq, Show)
+-- data ImpactAssessment = ImpactAssessment
+--   { iaDistrict :: Text
+--   , iaTehsil :: Text
+--   , iaPopulation :: Text
+--   }
+--   deriving stock (Eq, Show)
 
-instance FromNamedRecord ImpactAssessment where
-  parseNamedRecord r =
-    ImpactAssessment
-      <$> r .: "District"
-      <*> r .: "Tehsil"
-      <*> r .: "Total Population"
+-- instance FromNamedRecord ImpactAssessment where
+--   parseNamedRecord r =
+--     ImpactAssessment
+--       <$> r .: "District"
+--       <*> r .: "Tehsil"
+--       <*> r .: "Total Population"
+
+type Sheet' = Vector (Vector ByteString)
+
+type ImpactAssessment = Sheet'
+
+data Sheet = ImpactAssessment | OnGroundContacts | Vendors
+  deriving stock (Eq, Show, Generic)
+
+data Sheets = Sheets
+  { impactAssessment :: Sheet'
+  , onGroundContacts :: Sheet'
+  , vendors :: Sheet'
+  } deriving stock (Eq, Show, Generic)
+
+emptySheets :: Sheets
+emptySheets = Sheets mempty mempty mempty
+
+-- instance Semigroup Sheets where
+--   a <> b = 
+
+
+pathSheet :: FilePath -> Maybe Sheet
+pathSheet "impact-assessment.csv" = Just ImpactAssessment
+pathSheet "on-ground-contacts.csv" = Just OnGroundContacts
+pathSheet "vendor-list.csv" = Just Vendors
+pathSheet _ = Nothing
+
+onSheet :: (Sheet' -> a) -> Sheet -> Sheets -> a 
+onSheet f ImpactAssessment s = f $ impactAssessment s 
+onSheet f OnGroundContacts s = f $ onGroundContacts s 
+onSheet f Vendors s = f $ vendors s
+
+getSheet :: Sheet -> Sheets -> Sheet'
+getSheet = onSheet id
+
+decodeCSV :: LByteString -> Either String (Vector (Vector ByteString))
+decodeCSV bs = Csv.decode Csv.NoHeader bs
+
+makeRow :: Vector ByteString -> H.Html
+makeRow row = H.tr $ forM_ row $ \column -> H.td $ H.unsafeByteString $ column
+
+mkTable :: Vector (Vector ByteString) -> H.Html 
+mkTable rows = H.table $ do
+  H.thead $ makeRow (V.head rows)
+  H.tbody $ forM_ (V.tail rows) makeRow
 
 impactAssessmentDynamic ::
   forall m.
   (MonadIO m, MonadUnliftIO m, MonadLogger m, MonadLoggerIO m) =>
   -- | Path to `./data` directory
   FilePath ->
-  m (Dynamic m [ImpactAssessment])
+  m (Dynamic m Sheets)
 impactAssessmentDynamic dataDir = do
   let pats = [((), "*.csv")]
-  Dynamic <$> UM.mount dataDir pats mempty mempty handleAction
+  Dynamic <$> UM.mount dataDir pats mempty emptySheets handleAction
   where
     handleAction ::
       () ->
       FilePath ->
       UM.FileAction () ->
-      m ([ImpactAssessment] -> [ImpactAssessment])
-    handleAction () fp fpAct = do
-      if fp == "impact-assesment.csv"
-        then case fpAct of
-          UM.Refresh _ () -> do
-            logInfoNS "csv" $ "Reading " <> toText fp
-            s <- readFileLBS $ dataDir </> fp
-            case Csv.decodeByName @ImpactAssessment s of
-              Left err -> throw $ userError $ "Failed to decode CSV: " <> fp <> ": " <> err
-              Right (_, toList -> rows) ->
-                pure $ \_ -> rows
-          UM.Delete -> do
-            pure $ \_ -> []
-        else pure id
+      m (Sheets -> Sheets)
+    handleAction () fp fpAct = case pathSheet fp of
+        Nothing -> pure id
+        Just x -> case x of
+          ImpactAssessment -> case fpAct of
+            UM.Refresh _ () -> do
+              logInfoNS "csv" $ "Reading " <> toText fp
+              s <- readFileLBS $ dataDir </> fp
+              case decodeCSV s of
+                Left err -> do
+                  throw $ userError $ "Failed to decode CSV: " <> fp <> ": " <> err
+                Right up -> do
+                  logInfoNS "csv" $ decodeUtf8 s
+                  return $ \sh -> sh { impactAssessment = up }
+            UM.Delete -> do
+              pure id
+          OnGroundContacts -> case fpAct of
+            UM.Refresh _ () -> do
+              logInfoNS "csv" $ "Reading " <> toText fp
+              s <- readFileLBS $ dataDir </> fp
+              case decodeCSV s of
+                Left err -> do
+                  throw $ userError $ "Failed to decode CSV: " <> fp <> ": " <> err
+                Right up -> do
+                  logInfoNS "csv" $ decodeUtf8 s
+                  return $ \sh -> sh { onGroundContacts = up }
+            UM.Delete -> do
+              pure id
+          Vendors -> case fpAct of
+            UM.Refresh _ () -> do
+              logInfoNS "csv" $ "Reading " <> toText fp
+              s <- readFileLBS $ dataDir </> fp
+              case decodeCSV s of
+                Left err -> do
+                  throw $ userError $ "Failed to decode CSV: " <> fp <> ": " <> err
+                Right up -> do
+                  logInfoNS "csv" $ decodeUtf8 s
+                  return $ \sh -> sh { vendors = up }
+            UM.Delete -> do
+              pure id              
+            -- case Csv.decodeByName @ImpactAssessment s of
+              
+            --   Left err -> throw $ userError $ "Failed to decode CSV: " <> fp <> ": " <> err
+            --   Right (_, toList -> rows) ->
+            --     pure $ \_ -> rows
+          
 
 data Model = Model
   { modelBaseUrl :: Text
   , modelStatic :: SR.Model
-  , modelImpactAssessment :: [ImpactAssessment]
+  , sheets :: Sheets
   }
   deriving stock (Eq, Show, Generic)
 
@@ -79,6 +158,7 @@ data HtmlRoute
   = HtmlRoute_Index
   | HtmlRoute_About
   deriving stock (Show, Eq, Ord, Generic, Enum, Bounded)
+
 
 deriveGeneric ''HtmlRoute
 deriveIsRoute ''HtmlRoute [t|'[]|]
@@ -105,8 +185,8 @@ instance EmaSite Route where
   type SiteArg Route = CliArgs
   siteInput cliAct args = do
     staticRouteDyn <- siteInput @StaticRoute cliAct ()
-    impactAssessment <- impactAssessmentDynamic "data"
-    pure $ Model (cliArgsBaseUrl args) <$> staticRouteDyn <*> impactAssessment
+    sheeit <- impactAssessmentDynamic "data"
+    pure $ Model (cliArgsBaseUrl args) <$> staticRouteDyn <*> sheeit
   siteOutput rp m = \case
     Route_Html r ->
       pure $ Ema.AssetGenerated Ema.Html $ renderHtmlRoute rp m r
@@ -138,7 +218,11 @@ renderBody rp model r = do
     H.h1 ! A.class_ "text-3xl font-bold" $ H.toHtml $ routeTitle r
     case r of
       HtmlRoute_Index -> do
-        H.pre $ H.toHtml $ Shower.shower $ modelImpactAssessment model
+        H.div $ H.toHtml $ Shower.shower $ V.length $ impactAssessment . sheets $ model
+        -- H.div $ mkTable . impactAssessment . sheets $ model
+        H.div $ mkTable . onGroundContacts . sheets $ model
+        H.div $ mkTable . vendors . sheets $ model
+        -- H.pre $ H.toHtml $ Shower.shower $ modelImpactAssessment model
       HtmlRoute_About -> do
         "You are on the about page."
         "Go to "

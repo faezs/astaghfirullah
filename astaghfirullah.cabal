@@ -44,7 +44,7 @@ executable astaghfirullah
     , time
     , unionmount            >=0.2
     , unliftio
-
+    , vector
   mixins:
     base hiding (Prelude),
     relude (Relude as Prelude, Relude.Container.One),
